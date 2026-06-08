@@ -1476,6 +1476,16 @@ def show_result(correct, player_ans, correct_ans, q_data):
         print(f"  Correct answer: {GRN}{q_data['opts'][correct_ans]}{R}")
     time.sleep(2.5)
 
+def shuffle_options(q):
+    """Return a shallow copy of q with answer options in a random order."""
+    letters = ["A", "B", "C", "D"]
+    values = [q["opts"][l] for l in letters]
+    correct_value = q["opts"][q["ans"]]
+    random.shuffle(values)
+    new_opts = {l: v for l, v in zip(letters, values)}
+    new_ans = next(l for l, v in new_opts.items() if v == correct_value)
+    return {**q, "opts": new_opts, "ans": new_ans}
+
 def select_questions(module_questions, n=12):
     """Pick n questions balanced across difficulties; fill from extras if a tier is short."""
     easy   = [q for q in module_questions if q["diff"] == 1]
@@ -1490,7 +1500,7 @@ def select_questions(module_questions, n=12):
         extras = [q for q in module_questions if id(q) not in used]
         random.shuffle(extras)
         selected += extras[:n - len(selected)]
-    return selected[:n]
+    return [shuffle_options(q) for q in selected[:n]]
 
 def play_module(module_name, module_questions):
     questions = select_questions(module_questions)
